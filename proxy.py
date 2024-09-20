@@ -1,5 +1,6 @@
 import datetime
 from functools import wraps
+from abc import ABC, abstractmethod
 
 
 def logger_proxy(func):
@@ -12,14 +13,27 @@ def logger_proxy(func):
     return wrapper
 
 
-class Server:
+class Singleton(type):
+    _instance = None
+
+    def __call__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__call__(*args, **kwargs)
+        return cls._instance
+
+
+class AbstractServer(metaclass=Singleton):
+    @abstractmethod
+    def receive_request(self):
+        pass
+
+    def send_response(self):
+        pass
+
+
+class Server(AbstractServer):
     _instance = None
     LOGS = []
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
 
     @logger_proxy
     def receive_request(self):
